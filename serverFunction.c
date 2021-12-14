@@ -113,11 +113,10 @@ int loginUser(char* message, int socket) {
 
   char query[200] = "\0";
 
-  sprintf(query, "SELECT * from users where username='%s' and password='%s'",
-          username, password);
+  sprintf(query, "SELECT * from users where username='%s'",username);
   if (mysql_query(con, query)) {
-    sprintf(response->message, "%d|F|%s\n", LOGIN, mysql_error(con));
-    send(socket, response, sizeof(Response), 0);
+    sprintf(response->message, "%s\n", mysql_error(con));
+    sendResponse(socket, response, sizeof(Response), 0);
     return 0;
   }
   MYSQL_RES* result = mysql_store_result(con);
@@ -126,6 +125,24 @@ int loginUser(char* message, int socket) {
     setMessageResponse(response);
     sendResponse(socket, response, sizeof(Response), 0);
     return 0;
+  }
+  else {
+      char query[200] = "\0";
+      sprintf(query, "SELECT * from users where username='%s' and password='%s'",
+              username, password);
+      if (mysql_query(con, query)) {
+          sprintf(response->message, "%s\n", mysql_error(con));
+          sendResponse(socket, response, sizeof(Response), 0);
+          return 0;
+      }
+      MYSQL_RES* result = mysql_store_result(con);
+      if (mysql_num_rows(result) == 0)
+      {
+          response->code = PASSWORD_INCORRECT;
+          setMessageResponse(response);
+          sendResponse(socket, response, sizeof(Response), 0);
+          return 0;
+      }
   }
   response->code = LOGIN_SUCCESS;
   setMessageResponse(response);
