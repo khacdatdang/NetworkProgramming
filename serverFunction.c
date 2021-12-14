@@ -8,8 +8,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "constain.h"
+
 #include "serverFunction.h"
+#include "protocol.h"
 
 extern MYSQL* con;
 
@@ -19,45 +20,54 @@ void finish_with_error(MYSQL* con) {
   exit(1);
 }
 
-int handle_message(char* message, int socket, int state) {
-  int type = message[0] - '0';
-  char server_message[100] = "\0";
-  switch (type) {
+STATE handle_message(Request* request, int socket, STATE state) {
+    Response *response = (Response*) malloc (sizeof(Response));
+  switch (request->code) {
     case LOGIN:
       if (state != NOT_AUTH) {
-        sprintf(server_message, "%d|S|You are already logged in\n", LOGIN);
-        send(socket, server_message, sizeof(server_message), 0);
+          response->code = USERNAME_IS_SIGNIN;
+          setMessageResponse(response);
+        sendResponse(socket, response, sizeof(Response), 0);
         return state;
       }
-      if (loginUser(message, socket)) {
+      if (loginUser(request->message, socket)) {
         return AUTH;
       } else {
-        return NOT_AUTH;
+        return state;
       }
       break;
     case REGISTER:
       if (state != NOT_AUTH) {
-        sprintf(server_message, "%d|S|You are already logged in\n", REGISTER);
-        send(socket, server_message, sizeof(server_message), 0);
-        return state;
+          response->code = USERNAME_IS_SIGNIN;
+          setMessageResponse(response);
+          sendResponse(socket, response, sizeof(Response), 0);
+          return state;
       }
-      if (registerUser(message, socket)) {
+      if (registerUser(request->message, socket)) {
         return AUTH;
       } else {
         return NOT_AUTH;
       }
       break;
     case LOGOUT:
-      if (state != NOT_AUTH) {
-        sprintf(server_message, "%d|S|Log out successful\n", LOGOUT);
-        send(socket, server_message, sizeof(server_message), 0);
-        return NOT_AUTH;
-      } else {
-        sprintf(server_message, "%d|F|You must login or register first\n",
-                LOGOUT);
-        send(socket, server_message, sizeof(server_message), 0);
-        return state;
-      }
+        if (state != NOT_AUTH) {
+            response->code = LOGOUT_SUCCESS;
+            setMessageResponse(response);
+            sendResponse(socket, response, sizeof(Response), 0);
+            return NOT_AUTH;
+        }
+//      if (state != NOT_AUTH) {
+//        sprintf(server_message, "%d|S|Log out successful\n", LOGOUT);
+//        send(socket, server_message, sizeof(server_message), 0);
+//        return NOT_AUTH;
+//      }
+        else {
+            response->code = LOGOUT_FAIL;
+            setMessageResponse(response);
+            sendResponse(socket, response, sizeof(Response), 0);
+            return state;
+        }
+        break;
     default:
       return state;
       break;
@@ -65,12 +75,11 @@ int handle_message(char* message, int socket, int state) {
 }
 
 int registerUser(char* message, int socket) {
-  char username[100] = "\0";
+    Response *response = (Response*) malloc (sizeof(Response));
+    char username[100] = "\0";
   char password[100] = "\0";
-  char serverMess[100] = "\0";
   char* token;
   token = strtok(message, "|");
-  token = strtok(NULL, "|");
   strcpy(username, token);
   token = strtok(NULL, "|");
   strcpy(password, token);
@@ -81,23 +90,22 @@ int registerUser(char* message, int socket) {
   sprintf(query, "INSERT INTO users (username, password) VALUES ('%s', '%s')",
           username, password);
   if (mysql_query(con, query)) {
-    sprintf(serverMess, "%d|F|%s\n", REGISTER, mysql_error(con));
-    send(socket, serverMess, strlen(serverMess), 0);
+    sprintf(response->message, "%s\n", mysql_error(con));
+    sendResponse(socket, response, sizeof(Response), 0);
     return 0;
   }
-  char server_message[100] = "\0";
-  sprintf(server_message, "%d|S|Successfully registered\n", REGISTER);
-  send(socket, server_message, sizeof(server_message), 0);
+  response->code = REGISTER_SUCCESS;
+    setMessageResponse(response);
+  sendResponse(socket, response, sizeof(Response), 0);
   return 1;
 }
 
 int loginUser(char* message, int socket) {
   char username[100] = "\0";
   char password[100] = "\0";
-  char serverMess[100] = "\0";
+  Response* response = (Response*) malloc(sizeof(Response));
   char* token;
   token = strtok(message, "|");
-  token = strtok(NULL, "|");
   strcpy(username, token);
   token = strtok(NULL, "|");
   strcpy(password, token);
@@ -108,19 +116,20 @@ int loginUser(char* message, int socket) {
   sprintf(query, "SELECT * from users where username='%s' and password='%s'",
           username, password);
   if (mysql_query(con, query)) {
-    sprintf(serverMess, "%d|F|%s\n", LOGIN, mysql_error(con));
-    send(socket, serverMess, strlen(serverMess), 0);
+    sprintf(response->message, "%d|F|%s\n", LOGIN, mysql_error(con));
+    send(socket, response, sizeof(Response), 0);
     return 0;
   }
   MYSQL_RES* result = mysql_store_result(con);
   if (mysql_num_rows(result) == 0) {
-    sprintf(serverMess, "%d|F|Invalid username or password\n", LOGIN);
-    send(socket, serverMess, strlen(serverMess), 0);
+    response->code = USERNAME_NOTFOUND;
+    setMessageResponse(response);
+    sendResponse(socket, response, sizeof(Response), 0);
     return 0;
   }
-  char server_message[100] = "\0";
-  sprintf(server_message, "%d|S|Successfully logged in\n", LOGIN);
-  send(socket, server_message, sizeof(server_message), 0);
+  response->code = LOGIN_SUCCESS;
+  setMessageResponse(response);
+  sendResponse(socket, response, sizeof(Response), 0);
   return 1;
 }
 

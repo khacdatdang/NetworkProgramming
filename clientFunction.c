@@ -7,8 +7,7 @@
 #include <unistd.h>
 
 #include "clientFunction.h"
-#include "constain.h"
-
+#include "protocol.h"
 
 void initMenu(){
     printf("-----------------------\n");
@@ -28,23 +27,18 @@ void authMenu(){
 
 }
 
-int extractServerMessage(char* message, int type) {
-  int status = FAILURE;
-  char* token = strtok(message, "|");
-  if (type != token[0] - '0') {
-    printf("Wrong recv message\n");
-    return status;
-  }
+STATE extractServerMessage(Response* response) {
+    switch (response->code) {
+        case LOGIN_SUCCESS:
+            return AUTH;
+        case JOIN_GAME_SUCCESS:
+            return IN_GAME;
+        case LOGOUT_SUCCESS:
+            return NOT_AUTH;
+        default:
+            return NOT_AUTH;
 
-  token = strtok(NULL, "|");
-  if (token[0] - 'S' == 0 || token[0] - 's' == 0) {
-    status = SUCCESS;
-  }
-  token = strtok(NULL, "|");
-  if (token != NULL) {
-    printf("%s\n", token);
-  }
-  return status;
+    }
 }
 
 void getString(char* label, char* des) {
@@ -56,6 +50,8 @@ void getString(char* label, char* des) {
 void createMessage(char* buffer, int type, char* data1, char* data2) {
   switch (type) {
     case LOGIN:
+        sprintf(buffer, "%d|%s|%s", type, data1, data2);
+        break;
     case REGISTER:
       sprintf(buffer, "%d|%s|%s", type, data1, data2);
       break;
@@ -67,70 +63,70 @@ void createMessage(char* buffer, int type, char* data1, char* data2) {
   }
 }
 
-int getUserChoice(int state) {
-  // print menu
-  switch(state){
-      case NOT_AUTH:
-      {
-          initMenu();
-          printf("Enter your choice: ");
-          int choice;
-          scanf("%d", &choice);
-          getchar();
-          switch (choice) {
-              case 1:
-                  return LOGIN;
-                  break;
-              case 2:
-                  return REGISTER;
-                  break;
-              case 3:
-              default:
-                  return EXIT;
-                  break;
-          }
-          break;
-      }
-      case AUTH:
-      {
-          authMenu();
-          printf("Enter your choice: ");
-          int choice;
-          scanf("%d", &choice);
-          getchar();
-          switch (choice) {
-              case 1:
-                  return JOIN_GAME;
-                  break;
-              case 2:
-                  return LOGOUT;
-                  break;
-              case 3:
-                  return DASHBOARD;
-                  break;
-              case 4:
-              default:
-                  return EXIT;
-                  break;
-          }
-          break;
-      }
-      case IN_GAME:
-      {
-          break;
-      }
-      default:
-          break;
-  }
-
-}
+//int getUserChoice(int state) {
+//  // print menu
+//  switch(state){
+//      case NOT_AUTH:
+//      {
+//          initMenu();
+//          printf("Enter your choice: ");
+//          int choice;
+//          scanf("%d", &choice);
+//          getchar();
+//          switch (choice) {
+//              case 1:
+//                  return LOGIN;
+//                  break;
+//              case 2:
+//                  return REGISTER;
+//                  break;
+//              case 3:
+//              default:
+//                  return EXIT;
+//                  break;
+//          }
+//          break;
+//      }
+//      case AUTH:
+//      {
+//          authMenu();
+//          printf("Enter your choice: ");
+//          int choice;
+//          scanf("%d", &choice);
+//          getchar();
+//          switch (choice) {
+//              case 1:
+//                  return JOIN_GAME;
+//                  break;
+//              case 2:
+//                  return LOGOUT;
+//                  break;
+//              case 3:
+//                  return DASHBOARD;
+//                  break;
+//              case 4:
+//              default:
+//                  return EXIT;
+//                  break;
+//          }
+//          break;
+//      }
+//      case IN_GAME:
+//      {
+//          break;
+//      }
+//      default:
+//          break;
+//  }
+//
+//}
 
 int login(int network_socket, int state) {
+    Request *request = (Request*) malloc (sizeof(Request));
+    Response *response = (Response*) malloc (sizeof(Response));
   printf("\n----------- Login --------------\n");
   char username[256] = "\0";
   char password[256] = "\0";
-  char buffer[256] = "\0";
-  char response[256] = "\0";
   int sent_status = 0;
 
   getString("Enter your username: ", username);
@@ -139,29 +135,31 @@ int login(int network_socket, int state) {
   }
   getString("Enter your password: ", password);
   // send data to the server
-  createMessage(buffer, LOGIN, username, password);
-  sent_status = send(network_socket, buffer, sizeof(buffer), 0);
+  request->code = LOGIN;
+  sprintf(request->message, "%s|%s", username, password);
+  sent_status = sendRequest(network_socket, request, sizeof(Request), 0);
   if (sent_status == -1) {
     printf("The data has error\n\n");
-  }  // check for sent_status
+  }
+//    printf("Sent %d\n", sent_status);// check for sent_status
 
   // receive data from the server
-  recv(network_socket, &response, sizeof(response), 0);
-  if (extractServerMessage(response, LOGIN) == SUCCESS) {
+  receiveResponse(network_socket, response, sizeof(Response), 0);
+  printf("%s\n", response->message);
+  if (response->code == LOGIN_SUCCESS) {
     return AUTH;
   } else {
-//    return login(network_socket, state);
       return state;
   }
 
 }
 int signup(int network_socket, int state) {
   printf("\n----------- Register --------------\n");
+  Request *request = (Request*) malloc (sizeof(Request));
+  Response *response = (Response*) malloc (sizeof(Response));
   char username[256] = "\0";
   char password[256] = "\0";
   char re_password[256] = "\0";
-  char buffer[256] = "\0";
-  char response[256] = "\0";
   int sent_status = 0;
   getString("Enter your username: ", username);
   if (strcmp(username, "q") == 0) {
@@ -174,15 +172,18 @@ int signup(int network_socket, int state) {
     printf("The password is not match\n\n");
     return signup(network_socket, state);
   }
-  createMessage(buffer, REGISTER, username, password);
-  sent_status = send(network_socket, buffer, sizeof(buffer), 0);
+
+  request->code = REGISTER;
+  sprintf(request->message, "%s|%s", username, password);
+  sent_status = sendRequest(network_socket, request, sizeof(Request), 0);
   if (sent_status == -1) {
     printf("The data has error\n\n");
   }  // check for sent_status
 
   // receive data from the server
-  recv(network_socket, &response, sizeof(response), 0);
-  if (extractServerMessage(response, REGISTER) == SUCCESS) {
+  receiveResponse(network_socket, response, sizeof(Response), 0);
+    printf("%s\n", response->message);
+  if (response->code == REGISTER_SUCCESS) {
     return AUTH;
   } else {
     return state;
@@ -190,22 +191,24 @@ int signup(int network_socket, int state) {
 }
 int logout(int network_socket, int state) {
 	printf("\n----------- Logout --------------\n");
-  char buffer[256] = "\0";
-  char response[256] = "\0";
+    Request *request = (Request*) malloc (sizeof(Request));
+    Response *response = (Response*) malloc (sizeof(Response));
   int sent_status = 0;
-  createMessage(buffer, LOGOUT, NULL, NULL);
-  sent_status = send(network_socket, buffer, sizeof(buffer), 0);
+  request->code = LOGOUT;
+    sent_status = sendRequest(network_socket, request, sizeof(Request), 0);
+
   if (sent_status == -1) {
     printf("The data has error\n\n");
   }
 
   // recevie data from the server
-  recv(network_socket, &response, sizeof(response), 0);
-  if (extractServerMessage(response, LOGOUT) == SUCCESS) {
-    return NOT_AUTH;
-  } else {
-    return state;
-  }
+    receiveResponse(network_socket, response, sizeof(Response), 0);
+    printf("%s\n", response->message);
+    if (response->code == LOGOUT_SUCCESS) {
+        return NOT_AUTH;
+    } else {
+        return state;
+    }
 }
 
 int playgame(int network_socket, int state) {

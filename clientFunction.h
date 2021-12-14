@@ -1,10 +1,12 @@
 #ifndef _CLIENT_FUNC_H
 #define _CLIENT_FUNC_H
+#include "protocol.h"
+
 void initMenu();
 void authMenu();
-int getUserChoice(int);
+//int getUserChoice(int);
 void getString(char*, char*);
-int extractServerMessage(char*, int);
+STATE extractServerMessage(Response*);
 void createMessage(char*, int, char*, char*);
 
 int login(int, int);

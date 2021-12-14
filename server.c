@@ -14,8 +14,8 @@
 #define PORT 5550
 #define BACKLOG 20
 
-#include "constain.h"
 #include "serverFunction.h"
+#include "protocol.h"
 
 MYSQL* con;
 void sig_chld(int signo);
@@ -108,21 +108,24 @@ void sig_chld(int signo){
 }
 
 void echo(int sockfd) {
-  int state = NOT_AUTH;
+  STATE state = NOT_AUTH;
+  Request *request = (Request*) malloc (sizeof(Request));
+//  Response *response = (Response*) malloc (sizeof(Response));
   int read_len = 0;
   char server_message[100] = "Hello from server\n";
   int send_status = 0;
   send_status = send(sockfd, server_message, sizeof(server_message), 0);
 
   char client_message[100] = "\0";
-  while ((read_len = recv(sockfd, client_message, 100, 0)) > 0) {
-    client_message[read_len] = '\0';
-    if (strcmp(client_message, "q") == 0 || strcmp(client_message, "Q") == 0) {
+  while ((receiveRequest(sockfd, request, sizeof(Request), 0)) > 0) {
+    request->message[strlen(request->message)] = '\0';
+    if (request->code == EXIT) {
       printf("Client disconnected\n");
       break;
-    }
 
-    state = handle_message(client_message, sockfd, state);
+    }
+      printf("Recieved\n");
+    state = handle_message(request, sockfd, state);
 
     memset(client_message, 0, sizeof(client_message));
   }

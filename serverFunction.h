@@ -1,8 +1,8 @@
 #ifndef _SERVER_FUNC_H
 #define _SERVER_FUNC_H
 
-
-int handle_message(char*, int, int);
+#include "protocol.h"
+STATE handle_message(Request*, int, STATE);
 int registerUser(char*, int);
 int loginUser(char*, int);
 void encryptPassword(char*);
