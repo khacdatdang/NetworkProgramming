@@ -6,6 +6,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <gtk/gtk.h> 
+
 #include "clientFunction.h"
 #include "protocol.h"
 
@@ -121,38 +123,6 @@ void createMessage(char* buffer, int type, char* data1, char* data2) {
 //
 //}
 
-int login(int network_socket, int state) {
-    Request *request = (Request*) malloc (sizeof(Request));
-    Response *response = (Response*) malloc (sizeof(Response));
-  printf("\n----------- Login --------------\n");
-  char username[256] = "\0";
-  char password[256] = "\0";
-  int sent_status = 0;
-
-  getString("Enter your username: ", username);
-  if (strcmp(username, "q") == 0) {
-    return state;
-  }
-  getString("Enter your password: ", password);
-  // send data to the server
-  request->code = LOGIN;
-  sprintf(request->message, "%s|%s", username, password);
-  sent_status = sendRequest(network_socket, request, sizeof(Request), 0);
-  if (sent_status == -1) {
-    printf("The data has error\n\n");
-  }
-//    printf("Sent %d\n", sent_status);// check for sent_status
-
-  // receive data from the server
-  receiveResponse(network_socket, response, sizeof(Response), 0);
-  printf("%s\n", response->message);
-  if (response->code == LOGIN_SUCCESS) {
-    return AUTH;
-  } else {
-      return state;
-  }
-
-}
 int signup(int network_socket, int state) {
   printf("\n----------- Register --------------\n");
   Request *request = (Request*) malloc (sizeof(Request));
@@ -213,6 +183,5 @@ int logout(int network_socket, int state) {
 
 int playgame(int network_socket, int state) {
     printf("---------GAME START---------\n");
-
-
+    return 1;
 }

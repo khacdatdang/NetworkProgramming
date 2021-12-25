@@ -55,9 +55,6 @@ void setMessageResponse(Response *msg)
 //            case INVALID_OPERATION:
 //                strcpy(msg->message, "Invalid operation ");
 //                break;
-        case USERNAME_FOUND:
-            strcpy(msg->message, "Username is correct ");
-            break;
         case USERNAME_NOTFOUND:
             strcpy(msg->message, "Cannot find account ");
             break;

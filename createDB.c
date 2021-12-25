@@ -11,7 +11,7 @@ int main(int argc, char const* argv[]) {
     exit(1);
   }
 
-  if (mysql_real_connect(con, "localhost", "root", "", NULL, 0, NULL, 0) ==
+  if (mysql_real_connect(con, "localhost", "root", "insert_password", NULL, 0, NULL, 0) ==
       NULL) {
     fprintf(stderr, "%s\n", mysql_error(con));
     mysql_close(con);

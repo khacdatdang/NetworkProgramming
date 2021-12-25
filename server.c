@@ -30,7 +30,7 @@ int main(){
         exit(1);
     }
 
-    if (mysql_real_connect(con, "localhost", "root", "", "project", 0, NULL, 0) ==
+    if (mysql_real_connect(con, "localhost", "root", "insert_password", "project", 0, NULL, 0) ==
         NULL) {
         finish_with_error(con);
     }
@@ -108,6 +108,7 @@ void sig_chld(int signo){
 }
 
 void echo(int sockfd) {
+    printf("Start echo\n");
   STATE state = NOT_AUTH;
   Request *request = (Request*) malloc (sizeof(Request));
 //  Response *response = (Response*) malloc (sizeof(Response));
@@ -122,12 +123,14 @@ void echo(int sockfd) {
     if (request->code == EXIT) {
       printf("Client disconnected\n");
       break;
-
     }
       printf("Recieved\n");
+      printf("%s\n", request->message);
     state = handle_message(request, sockfd, state);
 
     memset(client_message, 0, sizeof(client_message));
+
+    printf("Recieved\n");
   }
   close(sockfd);
 }

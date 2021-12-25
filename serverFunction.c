@@ -24,6 +24,7 @@ STATE handle_message(Request* request, int socket, STATE state) {
     Response *response = (Response*) malloc (sizeof(Response));
   switch (request->code) {
     case LOGIN:
+    printf("Start handle \n");
       if (state != NOT_AUTH) {
           response->code = USERNAME_IS_SIGNIN;
           setMessageResponse(response);
