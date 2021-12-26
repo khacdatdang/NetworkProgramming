@@ -35,6 +35,7 @@ STATE handle_message(char* message, int socket, STATE state) {
         return state;
       }
       if (loginUser(message, socket)) {
+
         return AUTH;
       } else {
         return NOT_AUTH;
@@ -166,6 +167,7 @@ int registerUser(char* message, int socket) {
 }
 
 int loginUser(char* message, int socket) {
+    printf("Start handle login\n");
   char username[100] = "\0";
   char password[100] = "\0";
   char serverMess[100] = "\0";

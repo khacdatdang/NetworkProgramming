@@ -122,7 +122,7 @@ void sig_chld(int signo) {
 void echo(int sockfd) {
     char buff[BUFF_SIZE];
     int bytes_received;
-
+    int state = NOT_AUTH;
     // recv file name
     bytes_received = recv(sockfd, buff, BUFF_SIZE, 0);
     if (bytes_received < 0) {
@@ -131,7 +131,7 @@ void echo(int sockfd) {
     }
     buff[bytes_received] = '\0';
     printf("%s\n", buff);
-    int state = handle_message(buff, sockfd, state);
+    state = handle_message(buff, sockfd, state);
 
     close(sockfd);
 }
