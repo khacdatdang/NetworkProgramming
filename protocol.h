@@ -16,12 +16,9 @@ typedef enum {
     EXIT
 } REQUEST_CODE;
 
-typedef  struct {
-    REQUEST_CODE code;
-    char message[100];
-} Request;
 
 typedef enum {
+    QUERY_FAIL,
     USERNAME_NOTFOUND,
     USERNAME_BLOCKED,
     USERNAME_IS_SIGNIN,
@@ -33,6 +30,7 @@ typedef enum {
 
     LOGOUT_SUCCESS,
     LOGOUT_FAIL,
+    JOIN_GAME_FAIL,
     JOIN_GAME_SUCCESS,
 
     ANSWER_CORRECT,
@@ -44,10 +42,6 @@ typedef enum {
     REGISTER_USERNAME_EXISTED,
 } RESPONSE_CODE;
 
-typedef struct {
-    RESPONSE_CODE code;
-    char message[100];
-} Response;
 
 typedef enum {
     NOT_AUTH,
@@ -55,18 +49,18 @@ typedef enum {
     IN_GAME,
 } STATE;
 
-int receiveRequest(int socket, Request *buff, int size, int flags);
-int sendRequest(int socket, Request *buff, int size, int flags);
-
-int sendResponse(int socket, Response *msg, int size, int flags);
-int receiveResponse(int socket, Response *msg, int size, int flags);
-
-// set message response
-void setMessageResponse(Response *msg);
-//void readMessageResponse(Response *msg);
-
-//set opcode request
-void setOpcodeRequest(Request *request, char *input);
+//int receiveRequest(int socket, Request *buff, int size, int flags);
+//int sendRequest(int socket, Request *buff, int size, int flags);
+//
+//int sendResponse(int socket, Response *msg, int size, int flags);
+//int receiveResponse(int socket, Response *msg, int size, int flags);
+//
+//// set message response
+//void setMessageResponse(Response *msg);
+////void readMessageResponse(Response *msg);
+//
+////set opcode request
+//void setOpcodeRequest(Request *request, char *input);
 
 
 #endif //NETWORKPROGRAMMING_PROTOCOL_H

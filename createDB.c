@@ -11,16 +11,16 @@ int main(int argc, char const* argv[]) {
     exit(1);
   }
 
-  if (mysql_real_connect(con, "localhost", "root", "insert_password", NULL, 0, NULL, 0) ==
+  if (mysql_real_connect(con, "localhost", "root", "", NULL, 0, NULL, 0) ==
       NULL) {
     fprintf(stderr, "%s\n", mysql_error(con));
     mysql_close(con);
     exit(1);
   }
 
-  if (mysql_query(con, "CREATE DATABASE project")) {
+  if (mysql_query(con, "CREATE DATABASE test")) {
     if (strcmp(mysql_error(con),
-               "Can't create database 'project'; database exists") == 0) {
+               "Can't create database 'test'; database exists") == 0) {
       printf("Database is exists");
     } else {
       fprintf(stderr, "%s\n", mysql_error(con));
@@ -31,7 +31,7 @@ int main(int argc, char const* argv[]) {
   mysql_close(con);
   con = mysql_init(NULL);
 
-  if (mysql_real_connect(con, "localhost", "root", "", "project", 0, NULL, 0) ==
+  if (mysql_real_connect(con, "localhost", "root", "", "test", 0, NULL, 0) ==
       NULL) {
     fprintf(stderr, "%s\n", mysql_error(con));
     mysql_close(con);
@@ -47,20 +47,19 @@ int main(int argc, char const* argv[]) {
   if (mysql_query(
           con,
           "CREATE TABLE users(id INT PRIMARY KEY AUTO_INCREMENT, username "
-          "VARCHAR(255) UNIQUE, password VARCHAR(255), highScore INT, wrongpasstime INT)")) {
+          "VARCHAR(255) UNIQUE, password VARCHAR(255), highScore INT)")) {
     fprintf(stderr, "%s\n", mysql_error(con));
     mysql_close(con);
     exit(1);
   }
 
-//    if (mysql_query(
-//            con,
-//            "CREATE TABLE questions(id INT PRIMARY KEY AUTO_INCREMENT, question VARCHAR(500),"
-//            "ans1 VARCHAR(255),ans1 VARCHAR(255),ans1 VARCHAR(255),ans1 VARCHAR(255),password VARCHAR(255), highScore INT)")) {
-//        fprintf(stderr, "%s\n", mysql_error(con));
-//        mysql_close(con);
-//        exit(1);
-//    }
+    if (mysql_query(
+            con,
+            "CREATE TABLE questions(id INT PRIMARY KEY AUTO_INCREMENT, question VARCHAR(255), answer1 VARCHAR(255), answer2 VARCHAR(255), answer3 VARCHAR(255), answer4 VARCHAR(255), trueanswer CHAR(1), level INT)")) {
+        fprintf(stderr, "%s\n", mysql_error(con));
+        mysql_close(con);
+        exit(1);
+    }
 
   if (mysql_query(
           con,
@@ -69,6 +68,14 @@ int main(int argc, char const* argv[]) {
     mysql_close(con);
     exit(1);
   }
+
+    if (mysql_query(
+            con,
+            "INSERT INTO questions(question, answer1, answer2, answer3, answer4, trueanswer, level) VALUES('This is question 1', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'B','1'),('This is question 2', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'C','2') ")) {
+        fprintf(stderr, "%s\n", mysql_error(con));
+        mysql_close(con);
+        exit(1);
+    }
 
   mysql_close(con);
   exit(0);
