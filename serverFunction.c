@@ -65,6 +65,7 @@ STATE handle_message(char* message, int socket, STATE state) {
         return state;
       }
     case JOIN_GAME: {
+        printf("Handle join game\n");
         if (state == NOT_AUTH) {
             sprintf(server_message, "%d|You must login first\n", JOIN_GAME_FAIL);
             send(socket, server_message, sizeof(server_message), 0);
@@ -82,10 +83,9 @@ STATE handle_message(char* message, int socket, STATE state) {
   }
 }
 int playGame(int socket){
+    printf("Start send question \n");
     int position = 0;
-
-
-    char serverMess[300] = "\0";
+    char serverMess[1024] = "\0";
     char query[200] = "\0";
 
     if (position >=0 && position < 5){
@@ -111,32 +111,33 @@ int playGame(int socket){
     }
     else {
         // Send question
+        MYSQL_ROW row = mysql_fetch_row(result);
+        sprintf(serverMess, "%d|%s|%s|%s|%s|%s\n", QUESTION, row[1], row[2], row[3], row[4], row[5]);
+        send(socket, serverMess, strlen(serverMess), 0);
         //Get choose answer
+        trueanswer = row[6];
     }
-
-    char client_message[100] = "\0";
-    recv(socket, client_message, 100, 0);
-    REQUEST_CODE type = client_message[0] - '0';
-    switch (type) {
-        case ANSWER: {
-            char* token;
-            char answer;
-            token = strtok(client_message, "|");
-            token = strtok(NULL, "|");
-            answer = token[0];
-            if (answer == trueanswer)
-                position += 1 ;
-           break;
-        }
-        case HELP: {
-            break;
-        }
-        case STOP: {
-            break;
-        }
-    }
-
-
+//    char client_message[100] = "\0";
+//    recv(socket, client_message, 100, 0);
+//    REQUEST_CODE type = client_message[0] - '0';
+//    switch (type) {
+//        case ANSWER: {
+//            char* token;
+//            char answer;
+//            token = strtok(client_message, "|");
+//            token = strtok(NULL, "|");
+//            answer = token[0];
+//            if (answer == trueanswer)
+//                position += 1 ;
+//           break;
+//        }
+//        case HELP: {
+//            break;
+//        }
+//        case STOP: {
+//            break;
+//        }
+//    }
 
 }
 int registerUser(char* message, int socket) {

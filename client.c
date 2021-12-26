@@ -9,7 +9,7 @@
 #include "clientFunction.h"
 #include "protocol.h"
 
-#define PORT 5550
+#define PORT 9999
 
 int main(int argc, const char* argv[]) {
   int state = NOT_AUTH;
@@ -37,12 +37,13 @@ int main(int argc, const char* argv[]) {
     char response[256] = "\0";
     // receive data from the server
     recv(network_socket, &response, sizeof(response), 0);
-    printf("%s\n", response);
+    printf("Response : %s\n", response);
     int sent_status = 0;
 
     while (continuer) {
       // print menu
       int choice;
+      printf("State : %d\n",state);
       choice = getUserChoice(state);
       switch (choice) {
         case LOGIN:

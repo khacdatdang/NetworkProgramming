@@ -54,6 +54,8 @@ void createMessage(char* buffer, int type, char* data1, char* data2) {
     case LOGOUT:
       sprintf(buffer, "%d", type);
       break;
+      case JOIN_GAME:
+          sprintf(buffer, "%d",type);
     default:
       break;
   }
@@ -107,11 +109,12 @@ int getUserChoice(int state) {
           }
           break;
       }
-      case IN_GAME:
-      {
-          break;
-      }
+//      case IN_GAME:
+//      {
+//          break;
+//      }
       default:
+//          return NOT_AUTH;
           break;
   }
 
@@ -141,7 +144,9 @@ int login(int network_socket, int state) {
   int n = recv(network_socket, response, sizeof(response), 0);
   response[n] = '\0';
     printf("%s\n", response);
-    if ((response[0] - '0') == LOGIN_SUCCESS){
+    char* token;
+    token = strtok(response, "|");
+    if (atoi(token)== LOGIN_SUCCESS){
       printf("Login success\n");
       return AUTH;
   } else {
@@ -179,7 +184,9 @@ int signup(int network_socket, int state) {
     int n = recv(network_socket, response, sizeof(response), 0);
     response[n] = '\0';
     printf("%s\n", response);
-  if ((response[0] - '0') == REGISTER_SUCCESS) {
+    char* token;
+    token = strtok(response, "|");
+    if (atoi(token) == REGISTER_SUCCESS) {
     return AUTH;
   } else {
     return state;
@@ -198,15 +205,21 @@ int logout(int network_socket, int state) {
 
   // recevie data from the server
   recv(network_socket, &response, sizeof(response), 0);
-//  if (extractServerMessage(response, LOGOUT) == SUCCESS) {
-//    return NOT_AUTH;
-//  } else {
-//    return state;
-//  }
 }
 
 int playgame(int network_socket, int state) {
     printf("---------GAME START---------\n");
+    char buffer[256] = "\0";
+    char response[256] = "\0";
+    int sent_status = 0;
+    createMessage(buffer, JOIN_GAME, NULL, NULL);
+    sent_status = send(network_socket, buffer, sizeof(buffer), 0);
+    if (sent_status <= 0) {
+        printf("The data has error\n\n");
+    }
+    int n = recv(network_socket, response, sizeof(response), 0);
+    response[n] = '\0';
+    printf("%s\n", response);
 
-
+    return AUTH;
 }

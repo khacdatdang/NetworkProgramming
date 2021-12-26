@@ -123,15 +123,22 @@ void echo(int sockfd) {
     char buff[BUFF_SIZE];
     int bytes_received;
     int state = NOT_AUTH;
-    // recv file name
+    char server_message[100] = "Hello from server\n";
+    int send_status = 0;
+    send_status = send(sockfd, server_message, sizeof(server_message), 0);
+//    printf("%s\n", buff);
     bytes_received = recv(sockfd, buff, BUFF_SIZE, 0);
-    if (bytes_received < 0) {
-        perror("recv: ");
-        return;
-    }
-    buff[bytes_received] = '\0';
-    printf("%s\n", buff);
-    state = handle_message(buff, sockfd, state);
+    do {
+        printf("%s\n", buff);
+        buff[bytes_received] = '\0';
+        state = handle_message(buff, sockfd, state);
+        memset(buff, 0, sizeof(buff));
+        bytes_received = recv(sockfd, buff, BUFF_SIZE, 0);
+        if (bytes_received < 0) {
+            perror("recv: ");
+            return;
+        }
+    } while (buff > 0);
 
     close(sockfd);
 }
