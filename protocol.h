@@ -40,6 +40,7 @@ typedef enum {
 
     REGISTER_SUCCESS,
     REGISTER_USERNAME_EXISTED,
+    END_GAME,
 } RESPONSE_CODE;
 
 

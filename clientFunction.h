@@ -2,6 +2,7 @@
 #define _CLIENT_FUNC_H
 void initMenu();
 void authMenu();
+void answerMenus();
 int getUserChoice(int);
 void getString(char*, char*);
 //int extractServerMessage(char*, );

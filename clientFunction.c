@@ -28,6 +28,14 @@ void authMenu(){
 
 }
 
+void answerMenu(){
+    printf("-----------------------\n");
+    printf("1. Answer\n");
+    printf("2. Help\n");
+    printf("3. End game\n");
+
+}
+
 //RESPONSE_CODE extractServerMessage(char* response, char *message) {
 //  RESPONSE_CODE code;
 //  char* token = strtok(response, "|");
@@ -56,6 +64,10 @@ void createMessage(char* buffer, int type, char* data1, char* data2) {
       break;
       case JOIN_GAME:
           sprintf(buffer, "%d",type);
+          break;
+      case ANSWER:
+          sprintf(buffer, "%d|%s", type, data1);
+          break;
     default:
       break;
   }
@@ -212,14 +224,46 @@ int playgame(int network_socket, int state) {
     char buffer[256] = "\0";
     char response[256] = "\0";
     int sent_status = 0;
-    createMessage(buffer, JOIN_GAME, NULL, NULL);
-    sent_status = send(network_socket, buffer, sizeof(buffer), 0);
-    if (sent_status <= 0) {
-        printf("The data has error\n\n");
-    }
-    int n = recv(network_socket, response, sizeof(response), 0);
-    response[n] = '\0';
-    printf("%s\n", response);
+    RESPONSE_CODE type ;
+    do {
+        createMessage(buffer, JOIN_GAME, NULL, NULL);
+        sent_status = send(network_socket, buffer, sizeof(buffer), 0);
+        if (sent_status <= 0) {
+            printf("The data has error\n\n");
+        }
+        int n = recv(network_socket, response, sizeof(response), 0);
+        response[n] = '\0';
+        printf("Question \n");
+        printf("%s\n", response);
+        char *token = strtok(response, "|");
+        type = atoi(token);
+//        printf("Response type %d\n", type);
+
+        answerMenu();
+        int choice;
+        char answer[2];
+        printf("Enter your choice \n");
+        scanf("%d", &choice);
+        switch (choice) {
+            case 1: {
+                printf("Enter your answer\n");
+                getchar();
+                scanf("%s", answer);
+//                printf("Answer %s", answer);
+                sprintf(buffer, "%d|%s", ANSWER, answer);
+//                printf("Send message %s\n", buffer);
+                sent_status = send(network_socket, buffer, sizeof(buffer), 0);
+                if (sent_status <= 0) {
+                    printf("The data has error\n\n");
+                }
+                int n = recv(network_socket, response, sizeof(response), 0);
+                response[n] = '\0';
+                type = atoi(strtok(response, "|"));
+                printf("%s\n", strtok(NULL, "|"));
+                break;
+            }
+        }
+    } while (type != END_GAME);
 
     return AUTH;
 }

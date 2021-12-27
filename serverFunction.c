@@ -16,7 +16,7 @@
 #include "serverFunction.h"
 
 extern MYSQL* con;
-
+int position = 0;
 void finish_with_error(MYSQL* con) {
   fprintf(stderr, "%s\n", mysql_error(con));
   mysql_close(con);
@@ -84,7 +84,7 @@ STATE handle_message(char* message, int socket, STATE state) {
 }
 int playGame(int socket){
     printf("Start send question \n");
-    int position = 0;
+    printf("Position %d\n", position);
     char serverMess[1024] = "\0";
     char query[200] = "\0";
 
@@ -103,7 +103,7 @@ int playGame(int socket){
         return 0;
     }
     MYSQL_RES* result = mysql_store_result(con);
-    char trueanswer;
+    char trueanswer[2];
     if (mysql_num_rows(result) == 0) {
         sprintf(serverMess, "%d|Question not found\n", QUERY_FAIL);
         send(socket, serverMess, strlen(serverMess), 0);
@@ -113,32 +113,43 @@ int playGame(int socket){
         // Send question
         MYSQL_ROW row = mysql_fetch_row(result);
         sprintf(serverMess, "%d|%s|%s|%s|%s|%s\n", QUESTION, row[1], row[2], row[3], row[4], row[5]);
-        send(socket, serverMess, strlen(serverMess), 0);
+        int n = send(socket, serverMess, strlen(serverMess), 0);
+        if (n <= 0)
+            printf("Cannot send\n");
         //Get choose answer
-        trueanswer = row[6];
+        strcpy(trueanswer, row[6]);
     }
-//    char client_message[100] = "\0";
-//    recv(socket, client_message, 100, 0);
-//    REQUEST_CODE type = client_message[0] - '0';
-//    switch (type) {
-//        case ANSWER: {
-//            char* token;
-//            char answer;
-//            token = strtok(client_message, "|");
-//            token = strtok(NULL, "|");
-//            answer = token[0];
-//            if (answer == trueanswer)
-//                position += 1 ;
-//           break;
-//        }
-//        case HELP: {
-//            break;
-//        }
-//        case STOP: {
-//            break;
-//        }
-//    }
-
+    printf("End send\n");
+    char client_message[100] = "\0";
+    int n = recv(socket, client_message, 100, 0);
+    client_message[n] = '\0';
+    if (n <= 0)
+        printf("Cannot recieve\n");
+    REQUEST_CODE type = atoi(strtok(client_message, "|"));
+    printf("Request code %d\n", type);
+    switch (type) {
+        case ANSWER: {
+            char* token;
+            char answer;
+            token = strtok(NULL, "|");
+            printf("Answer %s\n", token);
+            printf("True answer %s\n", trueanswer);
+            if (strcmp(trueanswer, token) == 0){
+                printf("Answer true\n");
+                sprintf(serverMess, "%d|%s",ANSWER_CORRECT, "You answer correct");
+                send(socket, serverMess, strlen(serverMess), 0 );
+            }
+                position += 1 ;
+           break;
+        }
+        case HELP: {
+            break;
+        }
+        case STOP: {
+            break;
+        }
+    }
+    return  AUTH;
 }
 int registerUser(char* message, int socket) {
   char username[100] = "\0";
