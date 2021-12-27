@@ -5,6 +5,7 @@
 STATE handle_message(char*, int, STATE);
 int registerUser(char*, int);
 int loginUser(char*, int);
+int loadGame(int);
 void encryptPassword(char*);
 void finish_with_error(MYSQL* con);
 int playGame(int);

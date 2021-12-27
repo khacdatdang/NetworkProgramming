@@ -9,6 +9,7 @@ typedef enum {
     REGISTER,
     LOGOUT,
     JOIN_GAME,
+    QUESTION_REQUEST,
     DASHBOARD,
     ANSWER,
     HELP,
@@ -31,8 +32,9 @@ typedef enum {
     LOGOUT_SUCCESS,
     LOGOUT_FAIL,
     JOIN_GAME_FAIL,
-    QUESTION,
+    JOIN_GAME_SUCCESS,
 
+    QUESTION,
     ANSWER_CORRECT,
     HELP_SUCCESS,
     ANSWER_INCORRECT,

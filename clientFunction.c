@@ -68,6 +68,9 @@ void createMessage(char* buffer, int type, char* data1, char* data2) {
       case ANSWER:
           sprintf(buffer, "%d|%s", type, data1);
           break;
+      case QUESTION_REQUEST:
+          sprintf(buffer, "%d", type);
+          break;
     default:
       break;
   }
@@ -224,15 +227,27 @@ int playgame(int network_socket, int state) {
     char buffer[256] = "\0";
     char response[256] = "\0";
     int sent_status = 0;
+    int recv_bytes;
     RESPONSE_CODE type ;
+
+    createMessage(buffer, JOIN_GAME, NULL, NULL);
+    sent_status = send(network_socket, buffer, sizeof(buffer), 0);
+    if (sent_status <= 0) {
+        printf("The data has error\n\n");
+    }
+    recv_bytes = recv(network_socket, response, sizeof(response), 0);
+    response[recv_bytes] = '\0';
+    printf("%s\n", response);
     do {
-        createMessage(buffer, JOIN_GAME, NULL, NULL);
+        printf("Start sending request\n");
+        createMessage(buffer, QUESTION_REQUEST, NULL, NULL);
         sent_status = send(network_socket, buffer, sizeof(buffer), 0);
         if (sent_status <= 0) {
             printf("The data has error\n\n");
         }
-        int n = recv(network_socket, response, sizeof(response), 0);
-        response[n] = '\0';
+        recv_bytes = recv(network_socket, response, sizeof(response), 0);
+        response[recv_bytes] = '\0';
+//        printf("%s\n", response);
         printf("Question \n");
         printf("%s\n", response);
         char *token = strtok(response, "|");
@@ -263,7 +278,7 @@ int playgame(int network_socket, int state) {
                 break;
             }
         }
-    } while (type != END_GAME);
+    } while (type == ANSWER_CORRECT);
 
     return AUTH;
 }
