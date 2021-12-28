@@ -101,7 +101,7 @@ int loadGame(int socket){
     char serverMess[1024] = "\0";
     int index = 0;
     for (int i = 1 ; i <= 3 ; i++){
-        sprintf(query, "SELECT * from questions where level = %d ",i);
+        sprintf(query, "SELECT * from questions where level = %d order by RAND() limit 5",i);
         printf("%s\n", query);
         if (mysql_query(con, query)) {
             sprintf(serverMess, "%d|%s\n", QUERY_FAIL, mysql_error(con));
@@ -138,30 +138,33 @@ int playGame(int socket){
     char* token;
     char trueAnswer[2], question[1024];
     int sendBytes;
+    REQUEST_CODE type;
+//    printf("Question %s \n", questions[position]);
 
-    printf("Question %s \n", questions[position]);
+    // Seperate true answer and question
     strcpy(temp, questions[position]);
-
     token = strtok(temp, "|");
     strcpy(trueAnswer, token);
-    printf("%s\n", trueAnswer);
+    printf("True answer %s\n", trueAnswer);
     token = strtok(NULL, "+");
-    printf("%s\n", token);
+    printf("Question: %s\n", token);
     strcpy(question, token);
 
+    // Store and send question
     sprintf(serverMess, "%d|%s", QUESTION, question);
     sendBytes = send(socket, serverMess, strlen(serverMess), 0 );
 
+    // Receive choice from client after client received question
     int n = recv(socket, client_message, 100, 0);
     client_message[n] = '\0';
     if (n <= 0)
         printf("Cannot recieve\n");
-    REQUEST_CODE type = atoi(strtok(client_message, "|"));
+    type = atoi(strtok(client_message, "|"));
     printf("Request code %d\n", type);
+
     switch (type) {
         case ANSWER: {
             char* token;
-            char answer;
             token = strtok(NULL, "|");
             printf("Answer %s\n", token);
             if (strcmp(trueAnswer, token) == 0){
@@ -172,21 +175,29 @@ int playGame(int socket){
                 return 1;
             }
             else {
-                sprintf(serverMess, "%d|%s", ANSWER_INCORRECT, "You answer not correct");
+                int score = calculateScore(type, position);
+                sprintf(serverMess, "%d|%s %d", END_GAME, "Game end. Your score is :",score);
                 send(socket, serverMess, strlen(serverMess), 0);
                 position = 0;
                 return 0;
             }
-           break;
+            break;
         }
         case HELP: {
+            sprintf(serverMess, "%d|%s %s\n", HELP_SUCCESS, "Use help success. This question's answer is:",trueAnswer);
+            send(socket, serverMess, strlen(serverMess), 0 );
+            position += 1 ;
             break;
         }
         case STOP: {
+            int score = calculateScore(type, position);
+            sprintf(serverMess, "%d|%s|%d", END_GAME, "Game end. Your score is :",score);
+            send(socket, serverMess, strlen(serverMess), 0);
+            position = 0;
+            return 0;
             break;
         }
     }
-    return 1;
 }
 int registerUser(char* message, int socket) {
   char username[100] = "\0";
@@ -265,4 +276,27 @@ void encryptPassword(char* password) {
       password[i] = password[i] - i;
     }
   }
+}
+
+int calculateScore(REQUEST_CODE code, int position){
+    switch (code) {
+        case STOP:
+            return position;
+            break;
+        case ANSWER:
+            if (position == 0)
+                return 0;
+            else if (position >= 1 && position < 5)
+                return 1;
+            else if (position >= 5 && position < 10)
+                return 5;
+            else if (position > 10 && position <15)
+                return 10;
+            else if (position == 15)
+                return 15;
+            break;
+        default:
+            return 0 ;
+            break;
+    }
 }

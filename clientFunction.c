@@ -273,12 +273,36 @@ int playgame(int network_socket, int state) {
                 }
                 int n = recv(network_socket, response, sizeof(response), 0);
                 response[n] = '\0';
+                printf("%s\n", response);
                 type = atoi(strtok(response, "|"));
-                printf("%s\n", strtok(NULL, "|"));
+                break;
+            }
+            case 2: {
+                sprintf(buffer, "%d|", HELP);
+                sent_status = send(network_socket, buffer, sizeof(buffer), 0);
+                if (sent_status <= 0) {
+                    printf("The data has error\n\n");
+                }
+                int n = recv(network_socket, response, sizeof(response), 0);
+                response[n] = '\0';
+                type = atoi(strtok(response, "|"));
+                printf("%s\n", strtok(NULL, "+"));
+                break;
+            }
+            case 3:{
+                sprintf(buffer, "%d|", STOP);
+                sent_status = send(network_socket, buffer, sizeof(buffer), 0);
+                if (sent_status <= 0) {
+                    printf("The data has error\n\n");
+                }
+                int n = recv(network_socket, response, sizeof(response), 0);
+                response[n] = '\0';
+                printf("%s\n", response);
+                type = atoi(strtok(response, "|"));
                 break;
             }
         }
-    } while (type == ANSWER_CORRECT);
+    } while (type != END_GAME);
 
     return AUTH;
 }

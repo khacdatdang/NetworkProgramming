@@ -36,8 +36,8 @@ int main(int argc, const char* argv[]) {
   if (connection_status == 0) {
     char response[256] = "\0";
     // receive data from the server
-    recv(network_socket, &response, sizeof(response), 0);
-    printf("Response : %s\n", response);
+//    recv(network_socket, &response, sizeof(response), 0);
+//    printf("Response : %s\n", response);
     int sent_status = 0;
 
     while (continuer) {

@@ -71,7 +71,18 @@ int main(int argc, char const* argv[]) {
 
     if (mysql_query(
             con,
-            "INSERT INTO questions(question, answer1, answer2, answer3, answer4, trueanswer, level) VALUES('This is question 1', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'B','1'),('This is question 2', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'C','2') ")) {
+            "INSERT INTO questions(question, answer1, answer2, answer3, answer4, trueanswer, level) "
+            "VALUES('This is question 1', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'B','1'),"
+            "('This is question 2', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'C','2'),"
+            "('This is question 3', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','3'),"
+            "('This is question 4', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'A','1'),"
+            "('This is question 6', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','3'),"
+            "('This is question 7', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','2'),"
+            "('This is question 9', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','2'),"
+            "('This is question 10', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','1'),"
+            "('This is question 11', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','1'),"
+            "('This is question 12', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','3'),"
+            "('This is question 13', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','2')")) {
         fprintf(stderr, "%s\n", mysql_error(con));
         mysql_close(con);
         exit(1);
