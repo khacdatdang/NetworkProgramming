@@ -306,3 +306,18 @@ int playgame(int network_socket, int state) {
 
     return AUTH;
 }
+
+int dashboard(int network_socket, int state){
+    char buffer[256] = "\0";
+    char response[256]= "\0";
+    int sent_status, recv_bytes;
+    sprintf(buffer,"%d|",DASHBOARD);
+    sent_status = send(network_socket, buffer, sizeof(buffer), 0);
+    if (sent_status <= 0) {
+        printf("The data has error\n\n");
+    }
+    recv_bytes = recv(network_socket, response, sizeof(response), 0);
+    response[recv_bytes] = '\0';
+    printf("%s\n", response);
+    return AUTH;
+}

@@ -17,7 +17,9 @@
 
 extern MYSQL* con;
 int position = 0;
-char easyQuestions[5][1024], medQuestions[5][1024], hardQuestions[5][1024], questions[16][1024];
+int helpTimes = 2;
+char  questions[16][1024];
+char UserName[100];
 void finish_with_error(MYSQL* con) {
   fprintf(stderr, "%s\n", mysql_error(con));
   mysql_close(con);
@@ -66,36 +68,66 @@ STATE handle_message(char* message, int socket, STATE state) {
       }
     case JOIN_GAME: {
         printf("Handle join game\n");
-        if (state == NOT_AUTH) {
-            sprintf(server_message, "%d|You must login first\n", JOIN_GAME_FAIL);
-            send(socket, server_message, sizeof(server_message), 0);
-            return state;
-        } else {
+        printf("State :%d\n", state);
+//        if (state == NOT_AUTH) {
+//            sprintf(server_message, "%d|You must login first\n", JOIN_GAME_FAIL);
+//            send(socket, server_message, sizeof(server_message), 0);
+//            return state;
+//        } else {
             if (loadGame(socket))
                 return IN_GAME;
             else return AUTH;
-        }
+//        }
         break;
     }
     case QUESTION_REQUEST: {
         printf("handle game play\n");
-        if (state != IN_GAME) {
-            sprintf(server_message, "%d|You must login first\n", JOIN_GAME_FAIL);
-            send(socket, server_message, sizeof(server_message), 0);
-            return state;
-        } else {
+//        if (state != IN_GAME) {
+//            sprintf(server_message, "%d|You must login first\n", JOIN_GAME_FAIL);
+//            send(socket, server_message, sizeof(server_message), 0);
+//            return state;
+//        } else {
             if (playGame(socket))
                 return IN_GAME;
             else return AUTH;
-        }
+//        }
         break;
+    }
+    case DASHBOARD:{
+        printf("Handle dashboard\n");
+        showDashboard(socket);
+        return AUTH;
     }
     default:
       return state;
       break;
   }
 }
-
+void showDashboard(int socket){
+    char query[200] = "\0";
+    char serverMess[1024] = "\0";
+    char temp[1024] = "\0";
+    sprintf(query, "SELECT username, highScore from users ORDER BY highScore DESC");
+    printf("%s\n", query);
+    if (mysql_query(con, query)) {
+        sprintf(serverMess, "%d|%s\n", QUERY_FAIL, mysql_error(con));
+        send(socket, serverMess, strlen(serverMess), 0);
+    }
+    MYSQL_RES* result = mysql_store_result(con);
+    if (mysql_num_rows(result) == 0) {
+        sprintf(serverMess, "%d|Cannot show dashboard\n", QUERY_FAIL);
+        send(socket, serverMess, strlen(serverMess), 0);
+    }
+    else {
+        MYSQL_ROW  row;
+        while ( row = mysql_fetch_row(result)){
+            sprintf(temp,"%d|%s|%s|\n",DASHBOARD_INFO, row[0], row[1]);
+            strcat(serverMess, temp);
+        }
+        printf("%s\n", serverMess);
+    }
+    send(socket, serverMess, strlen(serverMess), 0);
+}
 int loadGame(int socket){
     char query[200] = "\0";
     char serverMess[1024] = "\0";
@@ -137,7 +169,7 @@ int playGame(int socket){
     char temp[1024];
     char* token;
     char trueAnswer[2], question[1024];
-    int sendBytes;
+    int sendBytes, highScore;
     REQUEST_CODE type;
 //    printf("Question %s \n", questions[position]);
 
@@ -175,7 +207,39 @@ int playGame(int socket){
                 return 1;
             }
             else {
+                sprintf(query, "SELECT * from users where username='%s'",UserName);
+                if (mysql_query(con, query)) {
+                    printf("Query fail\n");
+                    sprintf(serverMess, "%d|%s\n", QUERY_FAIL, mysql_error(con));
+                    send(socket, serverMess, strlen(serverMess), 0);
+                    return 0;
+                }
+                MYSQL_RES* result = mysql_store_result(con);
+
+//                if (mysql_num_rows(result) == 0){
+//                    printf("Username %s\n", UserName);
+//                    printf("Cannot find username\n");
+//                }
+                printf("Number of row %d\n", mysql_num_rows(result) );
+                MYSQL_ROW row;
+                if (row = mysql_fetch_row(result)){
+                    printf("Score %s\n", row[3]);
+                    highScore = atoi(row[3]);
+                }
+                else
+                    printf("Cannot fetch\n");
+                printf("OK!\n");
                 int score = calculateScore(type, position);
+                if (score > highScore)
+                {
+                    sprintf(query, "UPDATE users SET highScore = %d where username='%s'",score,UserName);
+                    if (mysql_query(con, query)) {
+                        printf("Query fail\n");
+                        sprintf(serverMess, "%d|%s\n", QUERY_FAIL, mysql_error(con));
+                        send(socket, serverMess, strlen(serverMess), 0);
+                        return 0;
+                    }
+                }
                 sprintf(serverMess, "%d|%s %d", END_GAME, "Game end. Your score is :",score);
                 send(socket, serverMess, strlen(serverMess), 0);
                 position = 0;
@@ -184,9 +248,18 @@ int playGame(int socket){
             break;
         }
         case HELP: {
-            sprintf(serverMess, "%d|%s %s\n", HELP_SUCCESS, "Use help success. This question's answer is:",trueAnswer);
-            send(socket, serverMess, strlen(serverMess), 0 );
-            position += 1 ;
+            if (helpTimes > 0){
+                sprintf(serverMess, "%d|%s %s\n", HELP_SUCCESS, "Use help success. This question's answer is:",trueAnswer);
+                send(socket, serverMess, strlen(serverMess), 0 );
+                position += 1 ;
+                helpTimes--;
+                return  1;
+            }
+            else {
+                sprintf(serverMess, "%d|%s\n", HELP_FAIL, "Help fail");
+                send(socket, serverMess, strlen(serverMess), 0 );
+                return 1;
+            }
             break;
         }
         case STOP: {
@@ -242,6 +315,7 @@ int loginUser(char* message, int socket) {
   char query[200] = "\0";
 
   sprintf(query, "SELECT * from users where username='%s'",username);
+    printf("%s\n", query);
   if (mysql_query(con, query)) {
     sprintf(serverMess, "%d|%s\n", QUERY_FAIL, mysql_error(con));
     send(socket, serverMess, strlen(serverMess), 0);
@@ -265,6 +339,7 @@ int loginUser(char* message, int socket) {
   }
   char server_message[100] = "\0";
   sprintf(server_message, "%d|Successfully logged in\n", LOGIN_SUCCESS);
+  strcpy(UserName,username );
   send(socket, server_message, sizeof(server_message), 0);
   return 1;
 }

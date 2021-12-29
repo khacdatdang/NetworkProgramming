@@ -58,9 +58,14 @@ int main(int argc, const char* argv[]) {
           state = logout(network_socket, state);
           break;
 
-        case JOIN_GAME:
-          state = playgame(network_socket, state);
-          break;
+        case JOIN_GAME:{
+            state = playgame(network_socket, state);
+            break;
+        }
+          case DASHBOARD:
+              state = dashboard(network_socket, state);
+              break;
+
 
         case EXIT:
         default:

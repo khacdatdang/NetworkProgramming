@@ -12,4 +12,5 @@ int login(int, int);
 int signup(int, int);
 int logout(int, int);
 int playgame(int,int);
+int dashboard(int,int);
 #endif  // _CLIENT_FUNC_H
