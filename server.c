@@ -125,8 +125,6 @@ void echo(int sockfd) {
     int state = NOT_AUTH;
     char server_message[100] = "Hello from server\n";
     int send_status = 0;
-//    send_status = send(sockfd, server_message, sizeof(server_message), 0);
-//    printf("%s\n", buff);
     bytes_received = recv(sockfd, buff, BUFF_SIZE, 0);
     do {
 //        printf("%s\n", buff);
@@ -138,7 +136,6 @@ void echo(int sockfd) {
             perror("recv: ");
             return;
         }
-    } while (buff > 0);
-
+    } while (buff > 0 ) ;
     close(sockfd);
 }

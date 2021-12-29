@@ -66,7 +66,6 @@ int main(int argc, const char* argv[]) {
               state = dashboard(network_socket, state);
               break;
 
-
         case EXIT:
         default:
           // send q or Q to disconnect
