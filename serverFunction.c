@@ -98,7 +98,7 @@ void showDashboard(int socket){
 }
 
 int answerQuestion(char* message, int socket){
-    int question_id;
+    int question_id, position;
     char answer[2], trueAnswer[2];
     char* token;
     char serverMess[1024] = "\0";
@@ -111,6 +111,7 @@ int answerQuestion(char* message, int socket){
     question_id = atoi(token);
     token = strtok(NULL, "|");
     strcpy(answer, token);
+    token = sttok(NULL, "|");
 //    answer[strlen(answer)-1] = '\0';
     printf("%s %d\n", answer, strlen(answer));
     sprintf(query, "SELECT * from questions where id = %d",question_id);
@@ -131,7 +132,6 @@ int answerQuestion(char* message, int socket){
         MYSQL_ROW row;
         row = mysql_fetch_row(result);
         printf("True answer %s %d\n", row[6], strlen(row[6]));
-
         if (strcmp(row[6], answer) == 0){
             printf("%s\n", row[6]);
             code = ANSWER_CORRECT;
