@@ -111,7 +111,6 @@ int answerQuestion(char* message, int socket){
     question_id = atoi(token);
     token = strtok(NULL, "|");
     strcpy(answer, token);
-    token = sttok(NULL, "|");
 //    answer[strlen(answer)-1] = '\0';
     printf("%s %d\n", answer, strlen(answer));
     sprintf(query, "SELECT * from questions where id = %d",question_id);
