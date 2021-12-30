@@ -47,7 +47,7 @@ int main(int argc, char const* argv[]) {
   if (mysql_query(
           con,
           "CREATE TABLE users(id INT PRIMARY KEY AUTO_INCREMENT, username "
-          "VARCHAR(255) UNIQUE, password VARCHAR(255), highScore INT DEFAULT 0)")) {
+          "VARCHAR(255) UNIQUE, password VARCHAR(255), highScore INT)")) {
     fprintf(stderr, "%s\n", mysql_error(con));
     mysql_close(con);
     exit(1);
@@ -55,7 +55,7 @@ int main(int argc, char const* argv[]) {
 
     if (mysql_query(
             con,
-            "CREATE TABLE questions(id INT PRIMARY KEY AUTO_INCREMENT, question VARCHAR(255), answer1 VARCHAR(255), answer2 VARCHAR(255), answer3 VARCHAR(255), answer4 VARCHAR(255), trueanswer CHAR(1), level INT)")) {
+            "CREATE TABLE questions(id INT PRIMARY KEY AUTO_INCREMENT, question VARCHAR(255), answer1 VARCHAR(255), answer2 VARCHAR(255), answer3 VARCHAR(255), answer4 VARCHAR(255), trueanswer VARCHAR(255), level INT)")) {
         fprintf(stderr, "%s\n", mysql_error(con));
         mysql_close(con);
         exit(1);
@@ -72,17 +72,21 @@ int main(int argc, char const* argv[]) {
     if (mysql_query(
             con,
             "INSERT INTO questions(question, answer1, answer2, answer3, answer4, trueanswer, level) "
-            "VALUES('This is question 1', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'B','1'),"
-            "('This is question 2', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'C','2'),"
-            "('This is question 3', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','3'),"
-            "('This is question 4', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'A','1'),"
-            "('This is question 6', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','3'),"
-            "('This is question 7', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','2'),"
-            "('This is question 9', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','2'),"
-            "('This is question 10', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','1'),"
-            "('This is question 11', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','1'),"
-            "('This is question 12', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','3'),"
-            "('This is question 13', 'A. Answer1 ', 'B. Answer2', 'C.Answer3', 'D.Answer 4', 'D','2')")) {
+            "VALUES('How many rings does Olympic flag have ?', 'A. Five', 'B. Six', 'C.Four', 'D.Ten', 'A','1'),"
+            "('What did Erno Rubik invent in 1975 ?', 'A. Microscope ', 'B. Telegraph', 'C.Rubik''s Cube', 'D.Polygraph', 'D','1'),"
+            "('Which country has won the most FIFA World Cups in football?', 'A. Argentina ', 'B. Spain', 'C.Japan', 'D.Brazil', 'B','1'),"
+            "('Which of the following, is the best source of protein ?', 'A. Salad ', 'B. Fish', 'C.Cucumber', 'D.Grape','C','1'),"
+            "('What kind of scientist was Euclid ?', 'A. Philosophist ', 'B. Chemist', 'C.Mathematic', 'D.Physician ', answer3,'2'),"
+            "('Which of the following, is the longest river in Europe ?', 'A. Ural ', 'B. Elbe', 'C.Oka', 'D.Volga', answer4,'2'),"
+            "('Which of the following, is the biggest moon of the Saturn ?', 'A. Titan ', 'B. Rhea', 'C.Hyperion', 'D.Iapetus ', answer1,'2'),"
+            "('Which of the following musicians is also known as King of POP ?', 'A. Frank zappa', 'B. Freddie mercury', 'C.George Michael', 'D.Michael Jackson', answer4 ,'2'),"
+            "('What do you call someone who doesn''''t believe in god ?', 'A. Atheist ', 'B. Agnostic', 'C.Theist', 'D.Skeptic ', answer1,'1'),"
+            "('Which animal, is the fastest animal in the world ?', 'A. Lion ', 'B. Cheetah', 'C.Greyhound', 'D.Horse', answer2,'3'),"
+            "('Which animal, is the fastest animal in the world ?', 'A. Lion ', 'B. Cheetah', 'C.Greyhound', 'D.Horse', answer2,'3'),"
+            "('Which animal, is the fastest animal in the world ?', 'A. Lion ', 'B. Cheetah', 'C.Greyhound', 'D.Horse', answer2,'3'),"
+            "('Which animal, is the fastest animal in the world ?', 'A. Lion ', 'B. Cheetah', 'C.Greyhound', 'D.Horse', answer2,'3'),"
+            "('Which animal, is the fastest animal in the world ?', 'A. Lion ', 'B. Cheetah', 'C.Greyhound', 'D.Horse', answer2,'3'),"
+            "('Which of the following, is the largest company by revenue ?', 'A. Wal-Mart ', 'B. BP', 'C.Apple', 'D.Shell', answer1,'2')")) {
         fprintf(stderr, "%s\n", mysql_error(con));
         mysql_close(con);
         exit(1);

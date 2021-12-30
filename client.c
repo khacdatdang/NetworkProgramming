@@ -62,7 +62,7 @@ int main(int argc, const char* argv[]) {
             state = playgame(network_socket, state);
             break;
         }
-          case DASHBOARD:
+        case DASHBOARD:
               state = dashboard(network_socket, state);
               break;
 

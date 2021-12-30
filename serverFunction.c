@@ -111,7 +111,8 @@ int answerQuestion(char* message, int socket){
     question_id = atoi(token);
     token = strtok(NULL, "|");
     strcpy(answer, token);
-
+//    answer[strlen(answer)-1] = '\0';
+    printf("%s %d\n", answer, strlen(answer));
     sprintf(query, "SELECT * from questions where id = %d",question_id);
     printf("%s\n", query);
     if (mysql_query(con, query)) {
@@ -129,15 +130,17 @@ int answerQuestion(char* message, int socket){
     else {
         MYSQL_ROW row;
         row = mysql_fetch_row(result);
-//        sprintf(question, "%d|%s|%s|%s|%s|%s\n", atoi(row[0]), row[1], row[2], row[3], row[4], row[5]);
+        printf("True answer %s %d\n", row[6], strlen(row[6]));
+
         if (strcmp(row[6], answer) == 0){
+            printf("%s\n", row[6]);
             code = ANSWER_CORRECT;
-            sprintf(serverMess, "%d|Answer correct|");
+            sprintf(serverMess, "%d|Answer correct|",code);
         }
         else
         {
             code = END_GAME;
-            sprintf(serverMess, "%d|Answer incorrect|");
+            sprintf(serverMess, "%d|Answer incorrect|",code);
         }
 
         send(socket, serverMess, strlen(serverMess), 0);
