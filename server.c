@@ -95,8 +95,9 @@ int main(int argc, char* argv[]) {
         /* fork() is called in child process */
         if (pid == 0) {
             close(listen_sock);
-            printf("You got a connection from %s\n",
-                   inet_ntoa(client.sin_addr)); /* prints client's IP */
+//            printf("You got a connection from %s\n",
+//                   inet_ntoa(client.sin_addr)); /* prints client's IP */
+            printf("Receive request\n");
             echo(conn_sock);
             exit(0);
         }
@@ -116,26 +117,30 @@ void sig_chld(int signo) {
 
     /* Wait the child process terminate */
     while ((pid = waitpid(-1, &stat, WNOHANG)) > 0)
-        printf("\nChild %d terminated\n", pid);
-}
+//        printf("\nChild %d terminated\n", pid);
+        printf("\n");
 
+}
+int count = 0;
 void echo(int sockfd) {
     char buff[BUFF_SIZE];
     int bytes_received;
     int state = NOT_AUTH;
     char server_message[100] = "Hello from server\n";
     int send_status = 0;
-    bytes_received = recv(sockfd, buff, BUFF_SIZE, 0);
+//    bytes_received = recv(sockfd, buff, BUFF_SIZE, 0);
     do {
 //        printf("%s\n", buff);
+        printf("Count %d\n", count);
         buff[bytes_received] = '\0';
         state = handle_message(buff, sockfd, state);
         memset(buff, 0, sizeof(buff));
         bytes_received = recv(sockfd, buff, BUFF_SIZE, 0);
-        if (bytes_received < 0) {
-            perror("recv: ");
-            return;
+        if (bytes_received <= 0) {
+//            perror("Connection close: ");
+            break;
         }
+        count++;
     } while (buff > 0 ) ;
     close(sockfd);
 }
