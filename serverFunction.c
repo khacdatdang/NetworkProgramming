@@ -55,6 +55,10 @@ STATE handle_message(char* message, int socket, STATE state) {
         sendQuestion(message, socket);
         break;
     }
+    case HELP: {
+        printf("handle help\n");
+        helpAnswer(message, socket);
+    }
     case ANSWER: {
         printf("Handle answer \n");
         answerQuestion(message, socket);
@@ -64,7 +68,12 @@ STATE handle_message(char* message, int socket, STATE state) {
         printf("Handle dashboard\n");
         showDashboard(socket);
         break;
-
+    }
+    case STOP:
+    case BREAK:
+    {
+        printf("Handle score\n");
+        calculateScore(message, socket, type);
     }
     default:
       return state;
@@ -141,12 +150,80 @@ int answerQuestion(char* message, int socket){
             code = END_GAME;
             sprintf(serverMess, "%d|Answer incorrect|",code);
         }
-
         send(socket, serverMess, strlen(serverMess), 0);
     }
-
 }
 
+int helpAnswer(char* message, int socket){
+    char serverMess[1024] = "\0";
+    RESPONSE_CODE code = HELP_SUCCESS;
+    sprintf(serverMess, "%d|Answer correct|",code);
+    send(socket, serverMess, strlen(serverMess), 0);
+}
+int calculateScore(char* message, int socket, REQUEST_CODE code){
+    char* token;
+    char username[50];
+    char serverMess[1024] = "\0";
+    int position ;
+    int score;
+    int highScore;
+    char query[1024] = "\0";
+    token = strtok(message, "|");
+    token = strtok(NULL, "|");
+    strcpy(username, token);
+    token = strtok(NULL,"|");
+    position = atoi(token);
+
+    if (code == STOP)
+    {
+        score = position ;
+    }
+    else
+    {
+        if (position == 0)
+                score = 0;
+            else if (position >= 1 && position < 5)
+                score = 1;
+            else if (position >= 5 && position < 10)
+                score = 5;
+            else if (position > 10 && position <15)
+                score = 10;
+            else if (position == 15)
+                score = 15;
+    }
+
+    sprintf(query, "SELECT * from users where username='%s'",username);
+    printf("%s\n", query);
+    if (mysql_query(con, query)) {
+        printf("Query fail\n");
+        sprintf(serverMess, "%d|%s\n", QUERY_FAIL, mysql_error(con));
+        send(socket, serverMess, strlen(serverMess), 0);
+        return 0;
+    }
+    MYSQL_RES* result = mysql_store_result(con);
+    printf("Number of row %d\n", mysql_num_rows(result) );
+    MYSQL_ROW row;
+    if (row = mysql_fetch_row(result)){
+        printf("Score %s\n", row[3]);
+        highScore = atoi(row[3]);
+    }
+    else
+        printf("Cannot fetch\n");
+//    return highScore;
+    if (score > highScore){
+        sprintf(query, "UPDATE users SET highScore = '%d' where username='%s'",score, username);
+        printf("%s\n", query);
+        if (mysql_query(con, query)) {
+            printf("Query fail\n");
+            sprintf(serverMess, "%d|%s\n", QUERY_FAIL, mysql_error(con));
+            send(socket, serverMess, strlen(serverMess), 0);
+            return 0;
+        }
+    }
+    sprintf(serverMess, "%d|%d|", SCORE_INFO, position);
+    send(socket, serverMess, strlen(serverMess), 0);
+
+}
 int sendQuestion(char* message, int socket){
     int position;
     printf("Start send question \n");
@@ -279,28 +356,28 @@ void encryptPassword(char* password) {
   }
 }
 
-int calculateScore(REQUEST_CODE code, int position){
-    switch (code) {
-        case STOP:
-            return position;
-            break;
-        case ANSWER:
-            if (position == 0)
-                return 0;
-            else if (position >= 1 && position < 5)
-                return 1;
-            else if (position >= 5 && position < 10)
-                return 5;
-            else if (position > 10 && position <15)
-                return 10;
-            else if (position == 15)
-                return 15;
-            break;
-        default:
-            return 0 ;
-            break;
-    }
-}
+//int calculateScore(REQUEST_CODE code, int position){
+//    switch (code) {
+//        case STOP:
+//            return position;
+//            break;
+//        case ANSWER:
+//            if (position == 0)
+//                return 0;
+//            else if (position >= 1 && position < 5)
+//                return 1;
+//            else if (position >= 5 && position < 10)
+//                return 5;
+//            else if (position > 10 && position <15)
+//                return 10;
+//            else if (position == 15)
+//                return 15;
+//            break;
+//        default:
+//            return 0 ;
+//            break;
+//    }
+//}
 
 //int getHighScore(int socket){
 //    char query[200] = "\0";

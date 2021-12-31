@@ -14,6 +14,7 @@ typedef enum {
     ANSWER,
     HELP,
     STOP,
+    BREAK,
     EXIT
 } REQUEST_CODE;
 
@@ -37,7 +38,7 @@ typedef enum {
     QUESTION,
     ANSWER_CORRECT,
     HELP_SUCCESS,
-    HELP_FAIL,
+    SCORE_INFO,
 
     DASHBOARD_INFO,
 
