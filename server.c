@@ -130,8 +130,7 @@ void echo(int sockfd) {
     int send_status = 0;
 //    bytes_received = recv(sockfd, buff, BUFF_SIZE, 0);
     do {
-//        printf("%s\n", buff);
-        printf("Count %d\n", count);
+
         buff[bytes_received] = '\0';
         state = handle_message(buff, sockfd, state);
         memset(buff, 0, sizeof(buff));

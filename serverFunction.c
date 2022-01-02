@@ -39,17 +39,11 @@ STATE handle_message(char* message, int socket, STATE state) {
         registerUser(message, socket);
       break;
     case LOGOUT:
-      if (state != NOT_AUTH) {
-        sprintf(server_message, "%d|Log out successful\n", LOGOUT_SUCCESS);
-        send(socket, server_message, sizeof(server_message), 0);
-        return NOT_AUTH;
-      } else {
-        sprintf(server_message, "%d|You must login or register first\n",
-                LOGOUT_FAIL);
-        send(socket, server_message, sizeof(server_message), 0);
-        return state;
-      }
-          break;
+        printf("Handle logout\n");
+        sprintf(server_message,"%d|", LOGOUT_SUCCESS);
+          printf("%s\n", server_message);
+          send(socket, server_message, strlen(server_message), 0);
+        break;
     case QUESTION_REQUEST: {
         printf("handle game play\n");
         sendQuestion(message, socket);
@@ -156,8 +150,32 @@ int answerQuestion(char* message, int socket){
 
 int helpAnswer(char* message, int socket){
     char serverMess[1024] = "\0";
+    char* token;
+    char query[1024];
+    char trueAnswer[2];
+    token = strtok(message, "|");
+    token = strtok(NULL, "|");
+    int question_id = atoi(token);
+    sprintf(query, "SELECT * from questions where id = %d",question_id);
+    printf("%s\n", query);
+    if (mysql_query(con, query)) {
+        sprintf(serverMess, "%d|%s\n", QUERY_FAIL, mysql_error(con));
+        send(socket, serverMess, strlen(serverMess), 0);
+        return 0;
+    }
+    MYSQL_RES* result = mysql_store_result(con);
+    if (mysql_num_rows(result) == 0) {
+        sprintf(serverMess, "%d|Question not found\n", QUERY_FAIL);
+        printf("Cannot find questions \n");
+        send(socket, serverMess, strlen(serverMess), 0);
+        return 0;
+    } else {
+        MYSQL_ROW row;
+        row = mysql_fetch_row(result);
+        strcpy(trueAnswer, row[6]);
+    }
     RESPONSE_CODE code = HELP_SUCCESS;
-    sprintf(serverMess, "%d|Answer correct|",code);
+    sprintf(serverMess, "%d|Answer of this question is %s|",code, trueAnswer);
     send(socket, serverMess, strlen(serverMess), 0);
 }
 int calculateScore(char* message, int socket, REQUEST_CODE code){
