@@ -239,7 +239,7 @@ int calculateScore(char* message, int socket, REQUEST_CODE code){
             return 0;
         }
     }
-    sprintf(serverMess, "%d|%d|", SCORE_INFO, position);
+    sprintf(serverMess, "%d|%d|", SCORE_INFO, score);
     send(socket, serverMess, strlen(serverMess), 0);
 
 }
