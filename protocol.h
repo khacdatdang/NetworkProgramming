@@ -47,25 +47,4 @@ typedef enum {
     END_GAME,
 } RESPONSE_CODE;
 
-
-typedef enum {
-    NOT_AUTH,
-    AUTH,
-    IN_GAME,
-} STATE;
-
-//int receiveRequest(int socket, Request *buff, int size, int flags);
-//int sendRequest(int socket, Request *buff, int size, int flags);
-//
-//int sendResponse(int socket, Response *msg, int size, int flags);
-//int receiveResponse(int socket, Response *msg, int size, int flags);
-//
-//// set message response
-//void setMessageResponse(Response *msg);
-////void readMessageResponse(Response *msg);
-//
-////set opcode request
-//void setOpcodeRequest(Request *request, char *input);
-
-
 #endif //NETWORKPROGRAMMING_PROTOCOL_H

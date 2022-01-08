@@ -125,14 +125,10 @@ int count = 0;
 void echo(int sockfd) {
     char buff[BUFF_SIZE];
     int bytes_received;
-    int state = NOT_AUTH;
-    char server_message[100] = "Hello from server\n";
     int send_status = 0;
-//    bytes_received = recv(sockfd, buff, BUFF_SIZE, 0);
     do {
-
         buff[bytes_received] = '\0';
-        state = handle_message(buff, sockfd, state);
+        handle_message(buff, sockfd);
         memset(buff, 0, sizeof(buff));
         bytes_received = recv(sockfd, buff, BUFF_SIZE, 0);
         if (bytes_received <= 0) {

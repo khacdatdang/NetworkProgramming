@@ -2,9 +2,10 @@
 #define _SERVER_FUNC_H
 #include "protocol.h"
 
-STATE handle_message(char*, int, STATE);
+void handle_message(char*, int);
 int registerUser(char*, int);
 int loginUser(char*, int);
+int logoutUser(char*, int);
 int loadGame(int);
 void encryptPassword(char*);
 void finish_with_error(MYSQL* con);
