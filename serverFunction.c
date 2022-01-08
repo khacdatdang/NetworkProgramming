@@ -14,6 +14,7 @@
 
 #include "protocol.h"
 #include "serverFunction.h"
+#define BUFF_SIZE 1024
 
 extern MYSQL* con;
 
@@ -25,7 +26,7 @@ void finish_with_error(MYSQL* con) {
 
 void handle_message(char* message, int socket) {
   REQUEST_CODE type = message[0] - '0';
-  char server_message[200] = "\0";
+//  char server_message[200] = "\0";
   switch (type) {
     case LOGIN:
         printf("handle login\n");
@@ -37,10 +38,8 @@ void handle_message(char* message, int socket) {
         break;
     case LOGOUT:
         printf("Handle logout\n");
-        printf("%s\n", message);
+//        printf("%s\n", message);
         logoutUser(message, socket);
-//          sprintf(server_message, "%d|\n", LOGOUT_SUCCESS);
-//          send(socket, server_message, strlen(server_message), 0);
         break;
     case QUESTION_REQUEST: {
         printf("handle game play\n");
@@ -73,9 +72,9 @@ void handle_message(char* message, int socket) {
   }
 }
 void showDashboard(int socket){
-    char query[200] = "\0";
-    char serverMess[1024] = "\0";
-    char temp[1024] = "\0";
+    char query[BUFF_SIZE] = "\0";
+    char serverMess[BUFF_SIZE] = "\0";
+    char temp[100] = "\0";
     sprintf(query, "SELECT username, highScore from users ORDER BY highScore DESC");
     printf("%s\n", query);
     if (mysql_query(con, query)) {
@@ -102,7 +101,7 @@ int answerQuestion(char* message, int socket){
     int question_id;
     char answer[2], trueAnswer[2];
     char* token;
-    char serverMess[1024] = "\0";
+    char serverMess[BUFF_SIZE] = "\0";
     char query[200] = "\0";
     RESPONSE_CODE code;
     // Split message
@@ -147,9 +146,9 @@ int answerQuestion(char* message, int socket){
 }
 
 int helpAnswer(char* message, int socket){
-    char serverMess[1024] = "\0";
+    char serverMess[BUFF_SIZE] = "\0";
     char* token;
-    char query[1024];
+    char query[BUFF_SIZE];
     char trueAnswer[2];
     token = strtok(message, "|");
     token = strtok(NULL, "|");
@@ -181,11 +180,11 @@ int helpAnswer(char* message, int socket){
 int calculateScore(char* message, int socket, REQUEST_CODE code){
     char* token;
     char username[50];
-    char serverMess[1024] = "\0";
+    char serverMess[BUFF_SIZE] = "\0";
     int position ;
     int score;
     int highScore;
-    char query[1024] = "\0";
+    char query[BUFF_SIZE] = "\0";
     token = strtok(message, "|");
     token = strtok(NULL, "|");
     strcpy(username, token);
@@ -244,12 +243,12 @@ int calculateScore(char* message, int socket, REQUEST_CODE code){
 int sendQuestion(char* message, int socket){
     int position;
     printf("Start send question \n");
-    char serverMess[1024] = "\0";
+    char serverMess[BUFF_SIZE] = "\0";
     char query[200] = "\0";
 
-    char temp[1024];
+    char temp[BUFF_SIZE];
     char* token;
-    char question[1024];
+    char question[BUFF_SIZE];
     int level;
     REQUEST_CODE type;
 
